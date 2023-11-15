@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>UltimateLogin</title>
+    <script src="vue.js"></script>
+    <script src="./axios.js"></script>
+    <!-- 引入样式 -->
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <!-- 引入组件库 -->
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <style>
+        body {
+            background-color: rgba(0, 0, 0, 0.5); /* 背景颜色透明度设置为 0.5 */
+            background-image: url('Bk.jpg');
+            background-size: cover;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+    </style>
+    <style>
+
+        .border-example {
+           /* border: 2px solid #000;
+            padding: 10px;
+          !*  margin: 0 auto;*!
+            color: #333;
+            text-align: center;*/
+            width: 300px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 2px solid #000;
+            border-radius: 4px;
+
+        }
+        .LabelColor label {
+            font-size: large;
+            font-weight: bold;
+            color: black;
+        }
+    </style>
+</head>
+<body>
+<div id="app">
+
+
+
+    <el-form ref="form" :model="Login" label-width="80px" class="border-example">
+        <el-form-item class="LabelColor" label="用户名:">
+            <el-input v-model="Login.username" placeholder="请输入用户名"></el-input>
+        </el-form-item>
+        <el-form-item class="LabelColor" label="密码:">
+            <el-input placeholder="请输入密码" v-model="Login.password" show-password></el-input>
+        </el-form-item>
+        <el-form-item class="LabelColor" label="身份:">
+            <template>
+                <el-radio v-model="Login.identity" label="teacher">教师</el-radio>
+                <el-radio v-model="Login.identity" label="student">学生</el-radio>
+            </template>
+        </el-form-item>
+        <el-form-item>
+            <el-button type="primary" @click="onSubmit">登陆</el-button>
+            <el-button type="primary" @click="dialogVisible=true">注册</el-button>
+        </el-form-item>
+    </el-form>
+
+
+
+    <el-dialog
+            title="登陆信息填写"
+            :visible.sync="dialogVisible"
+            width="30%"
+           >
+        <el-form ref="form" :model="Register" label-width="80px">
+            <el-form-item label="用户名:">
+                <el-input v-model="Register.RegisterName" placeholder="请输入用户名"></el-input>
+            </el-form-item>
+            <el-form-item label="密码:">
+                <el-input placeholder="请输入密码" v-model="Register.RegisterPassword" show-password></el-input>
+            </el-form-item>
+            <el-form-item label="专业:">
+                <el-input v-model="Register.RegisterMajor" placeholder="请输入专业"></el-input>
+            </el-form-item>
+            <el-form-item label="身份:">
+            <template>
+                <el-radio v-model="Register.RegisterIdentity" label="teacher">教师</el-radio>
+                <el-radio v-model="Register.RegisterIdentity" label="student">学生</el-radio>
+            </template>
+            </el-form-item>
+            <el-form-item>
+                <el-button type="primary" @click="register">立即注册</el-button>
+                <el-button @click="dialogVisible = false ">取消</el-button>
+            </el-form-item>
+
+        </el-form>
+
+    </el-dialog>
+
+
+
+
+
+
+
+
+
+
+
+
+</div>
+<script>
+    new Vue({
+        el:"#app",
+        data(){
+            return{
+
+                Login: {
+                     username:'',
+                    password:'',
+                    identity:'student'
+
+                },
+                Register:{
+                    RegisterName: '',
+                    RegisterPassword: '',
+                    RegisterMajor:'',
+                    RegisterIdentity: 'student'
+
+                },
+                dialogVisible: false
+
+
+            }
+
+
+
+        },
+        methods:{
+
+            handleClose(done) {
+                this.$confirm('确认关闭？')
+                    .then(_ => {
+                        done();
+                    })
+                    .catch(_ => {});
+            },
+            register() {
+                let t_this=this;
+                let formData = new URLSearchParams();
+                formData.append('RegisterName', t_this.Register.RegisterName);
+                formData.append('RegisterPassword', t_this.Register.RegisterPassword);
+                formData.append('RegisterMajor',t_this.Register.RegisterMajor);
+                formData.append('RegisterIdentity', t_this.Register.RegisterIdentity);
+
+                // 发送 POST 请求到 Servlet
+                axios.post('/TestGptCode_war/RegisterPage',formData,{
+                    headers:{
+                        'Content-Type':'application/x-www-form-urlencoded'
+                    }
+                })
+                    .then(function(response) {
+
+                       if(response.data==true){
+                           t_this.$message({
+                               showClose: true,
+                               message: '注册成功!',
+                               type: 'success'
+                           });
+                           t_this.dialogVisible=false;
+                       }
+                       else if(response.data==false){
+                           t_this.$message.error('错了哦，好像注册失败了!');
+                       }
+
+                    })
+                    .catch(function(error) {
+                        // 处理请求错误
+                        console.error(error);
+                    });
+    console.log('submit!');
+            },
+            onSubmit(){
+                let t_this=this;
+                let loginData = new URLSearchParams();
+                loginData.append('username', t_this.Login.username);
+                loginData.append('password', t_this.Login.password);
+                loginData.append('identity', t_this.Login.identity);
+                // 发送 POST 请求到 Servlet
+                axios.post('/TestGptCode_war/MyNewLoginPage',loginData,{
+                    headers:{
+                        'Content-Type':'application/x-www-form-urlencoded'
+                    }
+                })
+                    .then(function(response) {
+                        // 处理返回的响应数据
+                        console.log(response.data);
+                        if (response.data == "登陆成功！") {
+                            if (t_this.Login.identity == "student") {
+                                t_this.$message({
+                                    message: '登陆成功！',
+                                    type: 'success'
+                                });
+                                setTimeout(function() {
+                                    location.href = "http://localhost:8080/TestGptCode_war/studentPage.html";
+                                    //location.href="https://cccd-2408-8462-4f10-1d-b19b-f019-7972-1b8c.ngrok-free.app/TestGptCode_war/studentPage.html"
+                                }, 1000); // 延迟1秒后进行页面跳转
+                            } else {
+                                t_this.$message({
+                                    message: '登陆成功！',
+                                    type: 'success'
+                                });
+                                setTimeout(function() {
+                                    location.href = "http://localhost:8080/TestGptCode_war/TeacherPage.html";
+                                   // location.href="https://cccd-2408-8462-4f10-1d-b19b-f019-7972-1b8c.ngrok-free.app/TestGptCode_war/TeacherPage.html"
+                                }, 1000); // 延迟1秒后进行页面跳转
+                            }
+                        } else {
+                            t_this.$message({
+                                showClose: true,
+                                message: '登陆错误!',
+                                type: 'error'
+                            });
+                        }
+
+
+                    })
+                    .catch(function(error) {
+                        // 处理请求错误
+                        console.error(error);
+                    });
+
+
+
+
+
+
+
+
+
+
+            }
+
+
+
+
+
+
+
+        }
+
+    })
+
+</script>
+</body>
+</html>
